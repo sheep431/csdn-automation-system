@@ -1,0 +1,100 @@
+{
+  "date": "2026-04-28",
+  "account": "技术小甜甜",
+  "column_count": 3,
+  "lifecycle_counts": {
+    "active_revenue": 1,
+    "paused": 1,
+    "active_traffic": 1
+  },
+  "columns": [
+    {
+      "column": "AI实践-Dify专栏",
+      "lifecycle_state": "active_revenue",
+      "role": "flagship_revenue",
+      "notes": "一期模拟运行：旗舰收益专栏",
+      "updated_at": "2026-04-27T03:04:26Z",
+      "recent_allocations": [
+        {
+          "date": "2026-04-28",
+          "slot_index": 1,
+          "role": "flagship_revenue",
+          "lifecycle_state": "active_revenue",
+          "score": null
+        },
+        {
+          "date": "2026-04-27",
+          "slot_index": 1,
+          "role": "flagship_revenue",
+          "lifecycle_state": "active_revenue",
+          "score": null
+        },
+        {
+          "date": "2026-04-25",
+          "slot_index": 1,
+          "role": "flagship_revenue",
+          "lifecycle_state": "active_revenue",
+          "score": null
+        }
+      ],
+      "signal_matches": [],
+      "recommendation": "keep_as_revenue_column"
+    },
+    {
+      "column": "企业级AI落地实战：从模型部署到应用系统",
+      "lifecycle_state": "paused",
+      "role": "secondary_revenue",
+      "notes": "B类验证：临时暂停该第二收益点专栏，观察系统是否切换到引流专栏",
+      "updated_at": "2026-04-27T03:20:54Z",
+      "recent_allocations": [
+        {
+          "date": "2026-04-27",
+          "slot_index": 2,
+          "role": "secondary_revenue",
+          "lifecycle_state": "active_revenue",
+          "score": null
+        },
+        {
+          "date": "2026-04-25",
+          "slot_index": 2,
+          "role": "secondary_revenue",
+          "lifecycle_state": "active_revenue",
+          "score": null
+        }
+      ],
+      "signal_matches": [],
+      "recommendation": "resume_or_retire"
+    },
+    {
+      "column": "技术前沿每日速读",
+      "lifecycle_state": "active_traffic",
+      "role": "traffic_support",
+      "notes": "一期模拟运行：免费引流专栏",
+      "updated_at": "2026-04-27T03:04:31Z",
+      "recent_allocations": [
+        {
+          "date": "2026-04-28",
+          "slot_index": 2,
+          "role": "traffic_support",
+          "lifecycle_state": "active_traffic",
+          "score": null
+        }
+      ],
+      "signal_matches": [],
+      "recommendation": "keep_as_traffic_support"
+    }
+  ],
+  "allocation_files": [
+    "/mnt/e/个人项目/CSDN账号运营/automation-system/data/business/column_allocations/daily-column-allocation_2026-04-28_技术小甜甜.md",
+    "/mnt/e/个人项目/CSDN账号运营/automation-system/data/business/column_allocations/daily-column-allocation_2026-04-28_技术小甜甜.json",
+    "/mnt/e/个人项目/CSDN账号运营/automation-system/data/business/column_allocations/daily-column-allocation_2026-04-27_技术小甜甜.md",
+    "/mnt/e/个人项目/CSDN账号运营/automation-system/data/business/column_allocations/daily-column-allocation_2026-04-27_技术小甜甜.json",
+    "/mnt/e/个人项目/CSDN账号运营/automation-system/data/business/column_allocations/daily-column-allocation_2026-04-25_技术小甜甜.md",
+    "/mnt/e/个人项目/CSDN账号运营/automation-system/data/business/column_allocations/daily-column-allocation_2026-04-25_技术小甜甜.json"
+  ],
+  "strategy_files": [],
+  "column_asset_files": [],
+  "sales_files": [],
+  "feedback_files": [],
+  "generated_at": "2026-04-27T03:21:10Z"
+}

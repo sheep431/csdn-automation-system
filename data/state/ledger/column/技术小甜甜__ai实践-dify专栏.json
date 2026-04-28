@@ -1,0 +1,16 @@
+{
+  "object_type": "column",
+  "object_id": "技术小甜甜__ai实践-dify专栏",
+  "state": "active_revenue",
+  "notes": "一期模拟运行：旗舰收益专栏",
+  "source_path": null,
+  "attributes": {
+    "date": "2026-04-25",
+    "account": "技术小甜甜",
+    "column": "AI实践-Dify专栏",
+    "role": "flagship_revenue"
+  },
+  "created_at": "2026-04-27T03:04:26Z",
+  "updated_at": "2026-04-27T03:04:26Z",
+  "history_count": 1
+}

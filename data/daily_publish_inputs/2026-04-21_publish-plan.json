@@ -1,0 +1,93 @@
+{
+  "date": "2026-04-21",
+  "slots": [
+    {
+      "slot_id": "2026-04-21-old-traffic-1",
+      "account_profile": "old-traffic",
+      "account_name": "踏雪无痕老爷子",
+      "goal": "traffic",
+      "title": "[AI速读] 这周最值得拆的 3 个 Dify 场景：发布自动化、会议纪要、数据报警",
+      "topic": "技术前沿每日速读重启-Dify热点导流",
+      "audience": "想快速了解 Dify 最近能解决哪些真实业务问题的泛 AI 读者",
+      "column": "技术前沿每日速读",
+      "angle": "基于近期已发布的 Dify 案例文章做热点速读和轻量拆解，再导流到深度专栏",
+      "value": "直接承接《技术前沿每日速读》这个已停更 999 天的引流位，同时和近期 Dify 真实内容形成连续链路",
+      "cta": "如果你更关心具体实现，可以继续看 Dify 专栏里的“发布自动化 / 会议纪要 / 数据报警”完整实战文",
+      "why_now": "现有数据表明《技术前沿每日速读》是 free_lead 栏位且长期停更，而《AI实践-Dify专栏》近 30 天有 6 篇更新，最适合用速读文承接热点并导流",
+      "keywords": ["Dify", "发布自动化", "会议纪要", "数据报警", "技术前沿每日速读"],
+      "outline": [
+        "为什么《技术前沿每日速读》今天应该先用 Dify 热点重启",
+        "3 个近期高相关场景：发布自动化、会议纪要、数据报警",
+        "每个场景适合什么团队、解决什么问题、读者该继续看哪篇深度文",
+        "如何从速读文自然导流到深度专栏"
+      ],
+      "notes": "证据来源：content-ops/csdn_today_plan_latest.md + csdn_topic_planner_latest.xlsx；老号第 1 篇做引流恢复"
+    },
+    {
+      "slot_id": "2026-04-21-old-traffic-2",
+      "account_profile": "old-traffic",
+      "account_name": "踏雪无痕老爷子",
+      "goal": "traffic",
+      "title": "【AI】vLLM + OpenWebUI 组合部署：高吞吐推理与界面一体化实战",
+      "topic": "本地模型部署与推理网关",
+      "audience": "关注本地大模型部署、推理性能与私有化 AI 平台的技术读者",
+      "column": "AI前沿工坊｜从理论到实战的智能时代手册",
+      "angle": "从部署链路、吞吐瓶颈和界面集成三个角度，承接已有 Ollama/OpenWebUI 本地部署类内容往更工程化的 vLLM 路线延伸",
+      "value": "与现有《生成式AI实战笔记》里 Ollama/OpenWebUI/RAG 主题强相关，但切入更工程化，适合作为老号深度内容延续而不重复",
+      "cta": "如果你想继续看企业内网落地，可以顺着这篇再读“企业级AI落地实战”和后续的推理网关/监控专题",
+      "why_now": "现有 AI 题库显示下一阶段选题已排到 vLLM、TGI、推理网关等主题；同时《生成式AI实战笔记》的高频关键词已包含 ollama/openwebui/agent，适合往更高阶部署延展",
+      "keywords": ["vLLM", "OpenWebUI", "本地大模型", "推理部署", "高吞吐"],
+      "outline": [
+        "为什么只会 Ollama 还不够，什么时候该转向 vLLM",
+        "vLLM + OpenWebUI 的组合结构与部署步骤",
+        "吞吐、显存、并发和界面体验该怎么权衡",
+        "这套方案适合哪些企业内网/团队场景"
+      ],
+      "notes": "证据来源：老号/AI前沿工坊 new_ai_column_topics.txt + csdn_topic_planner_latest.xlsx 的 ollama/openwebui 关键词"
+    },
+    {
+      "slot_id": "2026-04-21-new-main-1",
+      "account_profile": "new-main",
+      "account_name": "技术小甜甜",
+      "goal": "revenue",
+      "title": "[Dify实战] 多轮对话状态管理：上下文保持与槽位填充",
+      "topic": "Dify 多轮状态管理",
+      "audience": "已经开始用 Dify 做业务助手、但发现多轮问答经常丢上下文的开发者和产品同学",
+      "column": "AI实践-Dify专栏",
+      "angle": "承接现有 Dify 专栏的工作流、RAG、工具节点主题，往“对话状态设计”这一更强实战需求延伸",
+      "value": "这是典型的信任型深度题，既延续 Dify 主专栏的高活跃方向，也能自然带出后续更复杂的 RAG/Agent 场景",
+      "cta": "如果你后面要做更复杂的问答系统，可以继续看‘长文档智能摘要’和‘多日期召回不全’这两篇进阶题",
+      "why_now": "现有长期规划表已经把这题列入 Dify 主战场的下一批主推；同时已发布 Dify 文章覆盖插件、工作流、RAG、企业场景，但还缺少对多轮状态控制的系统文章",
+      "keywords": ["Dify", "多轮对话", "上下文保持", "槽位填充", "状态管理"],
+      "outline": [
+        "为什么很多 Dify 对话应用一进入多轮就开始失真",
+        "上下文保持、槽位填充、摘要记忆分别解决什么问题",
+        "一个典型业务助手的状态设计示例",
+        "落地时最容易踩的坑与检查清单"
+      ],
+      "notes": "证据来源：content-ops/新号/长期单项分表.xlsx 的 CSDN主战场规划 + dify 已发布标题列表；新号第 1 篇做信任题"
+    },
+    {
+      "slot_id": "2026-04-21-new-main-2",
+      "account_profile": "new-main",
+      "account_name": "技术小甜甜",
+      "goal": "revenue",
+      "title": "[RAG实战] Dify 多日期提问召回不全？一次彻底解决“检索被稀释”的工程方案（含完整实现思路）",
+      "topic": "Dify RAG 检索稀释修复",
+      "audience": "已经在 Dify 中做知识库问答、遇到跨日期或多条件检索不稳定的技术读者",
+      "column": "AI实践-Dify专栏",
+      "angle": "从真实检索失败问题切入，解释为什么多日期提问会让召回被稀释，并给出完整修复思路",
+      "value": "这是高价值的转化型/深度实操题，和现有专栏关键词里的 rag、api、agent 高度连续，也更容易带出资源包或后续进阶内容",
+      "cta": "如果你需要，我可以继续把这篇延展成‘排查清单 + 参数模板 + 对比实验表’的绑定资源版",
+      "why_now": "现有 Dify 专栏最近 30 天高频关键词包含 rag / agent / api，且长期规划表已明确把‘多日期提问召回不全’列为下一阶段核心题；相比泛场景题，这篇更符合当前专栏延续性与经营性",
+      "keywords": ["Dify", "RAG", "召回不全", "检索稀释", "知识库问答"],
+      "outline": [
+        "一个典型现象：为什么一加日期条件，答案就开始偏",
+        "检索被稀释的根因：切片、召回、排序、过滤如何相互影响",
+        "在 Dify 中可执行的修复方案与配置思路",
+        "如何验证修复是否真的生效"
+      ],
+      "notes": "证据来源：content-ops/新号/长期单项分表.xlsx + dify_titles.txt / dify_shizhan_no_resource.csv 去重；新号第 2 篇做实操进阶题"
+    }
+  ]
+}

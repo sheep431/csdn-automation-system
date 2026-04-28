@@ -1,0 +1,30 @@
+{
+  "date": "2026-04-28",
+  "account": "技术小甜甜",
+  "allocation_count": 2,
+  "allocations": [
+    {
+      "slot_index": 1,
+      "column": "AI实践-Dify专栏",
+      "role": "flagship_revenue",
+      "lifecycle_state": "active_revenue",
+      "score": null,
+      "rationale": "继续保留旗舰 Dify 收益主线，作为当天第 1 篇稳定输出",
+      "source_signals": []
+    },
+    {
+      "slot_index": 2,
+      "column": "技术前沿每日速读",
+      "role": "traffic_support",
+      "lifecycle_state": "active_traffic",
+      "score": null,
+      "rationale": "因为企业级AI落地专栏已被临时暂停，本轮模拟要求观察系统是否切换到 active_traffic 的免费引流专栏承接第 2 篇",
+      "source_signals": []
+    }
+  ],
+  "notes": "从 prepare-publish-day 自动生成的当日专栏分配",
+  "source_signals": [
+    "/mnt/e/个人项目/CSDN账号运营/automation-system/data/daily_publish/2026-04-28/publish-day_2026-04-28.json"
+  ],
+  "generated_at": "2026-04-27T03:21:08Z"
+}

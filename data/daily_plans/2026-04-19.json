@@ -1,0 +1,66 @@
+{
+  "date": "2026-04-19",
+  "slot_count": 4,
+  "slots": [
+    {
+      "slot_id": "2026-04-19-old-traffic-1",
+      "account_profile": "old-traffic",
+      "account_label": "老号",
+      "goal": "traffic",
+      "strategy": "吸粉/排榜/测试题材",
+      "slot_index": 1,
+      "status": "topic_pending",
+      "topic": "",
+      "title": "",
+      "article_source": "manual",
+      "draft_ready": false,
+      "human_review": "pending",
+      "notes": ""
+    },
+    {
+      "slot_id": "2026-04-19-old-traffic-2",
+      "account_profile": "old-traffic",
+      "account_label": "老号",
+      "goal": "traffic",
+      "strategy": "吸粉/排榜/测试题材",
+      "slot_index": 2,
+      "status": "topic_pending",
+      "topic": "",
+      "title": "",
+      "article_source": "manual",
+      "draft_ready": false,
+      "human_review": "pending",
+      "notes": ""
+    },
+    {
+      "slot_id": "2026-04-19-new-main-1",
+      "account_profile": "new-main",
+      "account_label": "新号",
+      "goal": "revenue",
+      "strategy": "重点收益号/稳定垂类/转化导向",
+      "slot_index": 1,
+      "status": "topic_pending",
+      "topic": "",
+      "title": "",
+      "article_source": "manual",
+      "draft_ready": false,
+      "human_review": "pending",
+      "notes": ""
+    },
+    {
+      "slot_id": "2026-04-19-new-main-2",
+      "account_profile": "new-main",
+      "account_label": "新号",
+      "goal": "revenue",
+      "strategy": "重点收益号/稳定垂类/转化导向",
+      "slot_index": 2,
+      "status": "topic_pending",
+      "topic": "",
+      "title": "",
+      "article_source": "manual",
+      "draft_ready": false,
+      "human_review": "pending",
+      "notes": ""
+    }
+  ]
+}

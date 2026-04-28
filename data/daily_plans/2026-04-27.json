@@ -1,0 +1,36 @@
+{
+  "date": "2026-04-27",
+  "slot_count": 2,
+  "slots": [
+    {
+      "slot_id": "2026-04-27-new-main-1",
+      "account_profile": "new-main",
+      "account_label": "技术小甜甜",
+      "goal": "revenue",
+      "strategy": "AI实践-Dify专栏",
+      "slot_index": 1,
+      "status": "drafting_ready",
+      "topic": "Dify 多轮对话状态管理",
+      "title": "[Dify实战] 多轮对话状态管理：上下文保持与槽位填充",
+      "article_source": "packet",
+      "draft_ready": true,
+      "human_review": "pending",
+      "notes": "来自 topic-batch_20260421142013 的第 1 个主推题；作为本轮模拟的旗舰主更放在 AI实践-Dify专栏。（2026-04-27 模拟）"
+    },
+    {
+      "slot_id": "2026-04-27-new-main-2",
+      "account_profile": "new-main",
+      "account_label": "技术小甜甜",
+      "goal": "revenue",
+      "strategy": "企业级AI落地实战：从模型部署到应用系统",
+      "slot_index": 2,
+      "status": "drafting_ready",
+      "topic": "企业内网 AI 项目工程缺口",
+      "title": "[企业AI落地] 为什么很多内网 AI 项目卡在“能跑”之后？这 4 个工程缺口最常见",
+      "article_source": "packet",
+      "draft_ready": true,
+      "human_review": "pending",
+      "notes": "根据 content-ops 的双更原则修正：第二篇改为不同专栏，避免与 Dify 主更集中在同一专栏。（2026-04-27 模拟）"
+    }
+  ]
+}

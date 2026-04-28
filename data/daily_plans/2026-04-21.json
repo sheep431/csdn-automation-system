@@ -1,0 +1,66 @@
+{
+  "date": "2026-04-21",
+  "slot_count": 4,
+  "slots": [
+    {
+      "slot_id": "2026-04-21-old-traffic-1",
+      "account_profile": "old-traffic",
+      "account_label": "踏雪无痕老爷子",
+      "goal": "traffic",
+      "strategy": "技术前沿每日速读",
+      "slot_index": 1,
+      "status": "drafting_ready",
+      "topic": "技术前沿每日速读重启-Dify热点导流",
+      "title": "[AI速读] 这周最值得拆的 3 个 Dify 场景：发布自动化、会议纪要、数据报警",
+      "article_source": "packet",
+      "draft_ready": true,
+      "human_review": "pending",
+      "notes": "证据来源：content-ops/csdn_today_plan_latest.md + csdn_topic_planner_latest.xlsx；老号第 1 篇做引流恢复"
+    },
+    {
+      "slot_id": "2026-04-21-old-traffic-2",
+      "account_profile": "old-traffic",
+      "account_label": "踏雪无痕老爷子",
+      "goal": "traffic",
+      "strategy": "AI前沿工坊｜从理论到实战的智能时代手册",
+      "slot_index": 2,
+      "status": "drafting_ready",
+      "topic": "本地模型部署与推理网关",
+      "title": "【AI】vLLM + OpenWebUI 组合部署：高吞吐推理与界面一体化实战",
+      "article_source": "packet",
+      "draft_ready": true,
+      "human_review": "pending",
+      "notes": "证据来源：老号/AI前沿工坊 new_ai_column_topics.txt + csdn_topic_planner_latest.xlsx 的 ollama/openwebui 关键词"
+    },
+    {
+      "slot_id": "2026-04-21-new-main-1",
+      "account_profile": "new-main",
+      "account_label": "技术小甜甜",
+      "goal": "revenue",
+      "strategy": "AI实践-Dify专栏",
+      "slot_index": 3,
+      "status": "drafting_ready",
+      "topic": "Dify 多轮状态管理",
+      "title": "[Dify实战] 多轮对话状态管理：上下文保持与槽位填充",
+      "article_source": "packet",
+      "draft_ready": true,
+      "human_review": "pending",
+      "notes": "证据来源：content-ops/新号/长期单项分表.xlsx 的 CSDN主战场规划 + dify 已发布标题列表；新号第 1 篇做信任题"
+    },
+    {
+      "slot_id": "2026-04-21-new-main-2",
+      "account_profile": "new-main",
+      "account_label": "技术小甜甜",
+      "goal": "revenue",
+      "strategy": "AI实践-Dify专栏",
+      "slot_index": 4,
+      "status": "drafting_ready",
+      "topic": "Dify RAG 检索稀释修复",
+      "title": "[RAG实战] Dify 多日期提问召回不全？一次彻底解决“检索被稀释”的工程方案（含完整实现思路）",
+      "article_source": "packet",
+      "draft_ready": true,
+      "human_review": "pending",
+      "notes": "证据来源：content-ops/新号/长期单项分表.xlsx + dify_titles.txt / dify_shizhan_no_resource.csv 去重；新号第 2 篇做实操进阶题"
+    }
+  ]
+}

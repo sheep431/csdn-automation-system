@@ -1,0 +1,15 @@
+{
+  "object_type": "column_allocation",
+  "object_id": "portfolio-review__2026-04-25__技术小甜甜",
+  "state": "reviewed",
+  "notes": "column portfolio review generated",
+  "source_path": "/mnt/e/个人项目/CSDN账号运营/automation-system/data/business/column_portfolio/column-portfolio-review_2026-04-25_技术小甜甜.json",
+  "attributes": {
+    "date": "2026-04-25",
+    "account": "技术小甜甜",
+    "column_count": 3
+  },
+  "created_at": "2026-04-27T03:04:49Z",
+  "updated_at": "2026-04-27T03:04:49Z",
+  "history_count": 1
+}

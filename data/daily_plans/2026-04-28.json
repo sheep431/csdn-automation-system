@@ -1,0 +1,36 @@
+{
+  "date": "2026-04-28",
+  "slot_count": 2,
+  "slots": [
+    {
+      "slot_id": "2026-04-28-new-main-1",
+      "account_profile": "new-main",
+      "account_label": "技术小甜甜",
+      "goal": "revenue",
+      "strategy": "AI实践-Dify专栏",
+      "slot_index": 1,
+      "status": "drafting_ready",
+      "topic": "Dify 多轮对话状态管理",
+      "title": "[Dify实战] 多轮对话状态管理：上下文保持与槽位填充",
+      "article_source": "packet",
+      "draft_ready": true,
+      "human_review": "pending",
+      "notes": "B类验证：保持旗舰收益位不变。"
+    },
+    {
+      "slot_id": "2026-04-28-new-main-2",
+      "account_profile": "new-main",
+      "account_label": "技术小甜甜",
+      "goal": "traffic",
+      "strategy": "技术前沿每日速读",
+      "slot_index": 2,
+      "status": "drafting_ready",
+      "topic": "企业助手流程闭环热点解读",
+      "title": "[AI] 今天大家都在做企业助手，为什么“流程闭环”比“模型更强”更重要？",
+      "article_source": "packet",
+      "draft_ready": true,
+      "human_review": "pending",
+      "notes": "B类验证：企业级AI落地专栏暂停后，让免费引流专栏承担第 2 槽位。"
+    }
+  ]
+}

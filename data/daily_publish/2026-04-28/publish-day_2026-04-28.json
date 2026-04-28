@@ -1,0 +1,23 @@
+{
+  "date": "2026-04-28",
+  "board_path": "/mnt/e/个人项目/CSDN账号运营/automation-system/data/daily_plans/2026-04-28.json",
+  "packet_count": 2,
+  "packets": [
+    {
+      "slot_id": "2026-04-28-new-main-1",
+      "account_profile": "new-main",
+      "title": "[Dify实战] 多轮对话状态管理：上下文保持与槽位填充",
+      "packet_path": "/mnt/e/个人项目/CSDN账号运营/automation-system/data/daily_publish/2026-04-28/2026-04-28-new-main-1_dify实战-多轮对话状态管理-上下文保持与槽位填充.json",
+      "prompt_path": "/mnt/e/个人项目/CSDN账号运营/automation-system/data/daily_publish/2026-04-28/2026-04-28-new-main-1_dify实战-多轮对话状态管理-上下文保持与槽位填充_prompt.md",
+      "draft_markdown_path": "/mnt/e/个人项目/CSDN账号运营/automation-system/data/daily_publish/2026-04-28/2026-04-28-new-main-1_dify实战-多轮对话状态管理-上下文保持与槽位填充_draft.md"
+    },
+    {
+      "slot_id": "2026-04-28-new-main-2",
+      "account_profile": "new-main",
+      "title": "[AI] 今天大家都在做企业助手，为什么“流程闭环”比“模型更强”更重要？",
+      "packet_path": "/mnt/e/个人项目/CSDN账号运营/automation-system/data/daily_publish/2026-04-28/2026-04-28-new-main-2_ai-今天大家都在做企业助手-为什么-流程闭环-比-模型更强-更重要.json",
+      "prompt_path": "/mnt/e/个人项目/CSDN账号运营/automation-system/data/daily_publish/2026-04-28/2026-04-28-new-main-2_ai-今天大家都在做企业助手-为什么-流程闭环-比-模型更强-更重要_prompt.md",
+      "draft_markdown_path": "/mnt/e/个人项目/CSDN账号运营/automation-system/data/daily_publish/2026-04-28/2026-04-28-new-main-2_ai-今天大家都在做企业助手-为什么-流程闭环-比-模型更强-更重要_draft.md"
+    }
+  ]
+}

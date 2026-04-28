@@ -1,0 +1,180 @@
+{
+  "date": "2026-04-28",
+  "account": "技术小甜甜",
+  "counts": {
+    "column": 3,
+    "column_allocation": 6
+  },
+  "state_counts": {
+    "column": {
+      "active_revenue": 1,
+      "paused": 1,
+      "active_traffic": 1
+    },
+    "column_allocation": {
+      "planned": 3,
+      "reviewed": 3
+    }
+  },
+  "records": [
+    {
+      "object_type": "column",
+      "object_id": "技术小甜甜__ai实践-dify专栏",
+      "state": "active_revenue",
+      "notes": "一期模拟运行：旗舰收益专栏",
+      "source_path": null,
+      "attributes": {
+        "date": "2026-04-25",
+        "account": "技术小甜甜",
+        "column": "AI实践-Dify专栏",
+        "role": "flagship_revenue"
+      },
+      "created_at": "2026-04-27T03:04:26Z",
+      "updated_at": "2026-04-27T03:04:26Z",
+      "history_count": 1,
+      "record_path": "/mnt/e/个人项目/CSDN账号运营/automation-system/data/state/ledger/column/技术小甜甜__ai实践-dify专栏.json"
+    },
+    {
+      "object_type": "column",
+      "object_id": "技术小甜甜__企业级ai落地实战-从模型部署到应用系统",
+      "state": "paused",
+      "notes": "B类验证：临时暂停该第二收益点专栏，观察系统是否切换到引流专栏",
+      "source_path": null,
+      "attributes": {
+        "date": "2026-04-28",
+        "account": "技术小甜甜",
+        "column": "企业级AI落地实战：从模型部署到应用系统",
+        "role": "secondary_revenue"
+      },
+      "created_at": "2026-04-27T03:04:28Z",
+      "updated_at": "2026-04-27T03:20:54Z",
+      "history_count": 2,
+      "record_path": "/mnt/e/个人项目/CSDN账号运营/automation-system/data/state/ledger/column/技术小甜甜__企业级ai落地实战-从模型部署到应用系统.json"
+    },
+    {
+      "object_type": "column",
+      "object_id": "技术小甜甜__技术前沿每日速读",
+      "state": "active_traffic",
+      "notes": "一期模拟运行：免费引流专栏",
+      "source_path": null,
+      "attributes": {
+        "date": "2026-04-25",
+        "account": "技术小甜甜",
+        "column": "技术前沿每日速读",
+        "role": "traffic_support"
+      },
+      "created_at": "2026-04-27T03:04:31Z",
+      "updated_at": "2026-04-27T03:04:31Z",
+      "history_count": 1,
+      "record_path": "/mnt/e/个人项目/CSDN账号运营/automation-system/data/state/ledger/column/技术小甜甜__技术前沿每日速读.json"
+    },
+    {
+      "object_type": "column_allocation",
+      "object_id": "2026-04-25__技术小甜甜",
+      "state": "planned",
+      "notes": "从 prepare-publish-day 自动生成的当日专栏分配",
+      "source_path": "/mnt/e/个人项目/CSDN账号运营/automation-system/data/business/column_allocations/daily-column-allocation_2026-04-25_技术小甜甜.json",
+      "attributes": {
+        "date": "2026-04-25",
+        "account": "技术小甜甜",
+        "allocation_count": 2,
+        "columns": [
+          "AI实践-Dify专栏",
+          "企业级AI落地实战：从模型部署到应用系统"
+        ]
+      },
+      "created_at": "2026-04-27T03:04:46Z",
+      "updated_at": "2026-04-27T03:04:46Z",
+      "history_count": 1,
+      "record_path": "/mnt/e/个人项目/CSDN账号运营/automation-system/data/state/ledger/column_allocation/2026-04-25__技术小甜甜.json"
+    },
+    {
+      "object_type": "column_allocation",
+      "object_id": "2026-04-27__技术小甜甜",
+      "state": "planned",
+      "notes": "从 prepare-publish-day 自动生成的当日专栏分配",
+      "source_path": "/mnt/e/个人项目/CSDN账号运营/automation-system/data/business/column_allocations/daily-column-allocation_2026-04-27_技术小甜甜.json",
+      "attributes": {
+        "date": "2026-04-27",
+        "account": "技术小甜甜",
+        "allocation_count": 2,
+        "columns": [
+          "AI实践-Dify专栏",
+          "企业级AI落地实战：从模型部署到应用系统"
+        ]
+      },
+      "created_at": "2026-04-27T03:08:50Z",
+      "updated_at": "2026-04-27T03:08:50Z",
+      "history_count": 1,
+      "record_path": "/mnt/e/个人项目/CSDN账号运营/automation-system/data/state/ledger/column_allocation/2026-04-27__技术小甜甜.json"
+    },
+    {
+      "object_type": "column_allocation",
+      "object_id": "2026-04-28__技术小甜甜",
+      "state": "planned",
+      "notes": "从 prepare-publish-day 自动生成的当日专栏分配",
+      "source_path": "/mnt/e/个人项目/CSDN账号运营/automation-system/data/business/column_allocations/daily-column-allocation_2026-04-28_技术小甜甜.json",
+      "attributes": {
+        "date": "2026-04-28",
+        "account": "技术小甜甜",
+        "allocation_count": 2,
+        "columns": [
+          "AI实践-Dify专栏",
+          "技术前沿每日速读"
+        ]
+      },
+      "created_at": "2026-04-27T03:21:08Z",
+      "updated_at": "2026-04-27T03:21:08Z",
+      "history_count": 1,
+      "record_path": "/mnt/e/个人项目/CSDN账号运营/automation-system/data/state/ledger/column_allocation/2026-04-28__技术小甜甜.json"
+    },
+    {
+      "object_type": "column_allocation",
+      "object_id": "portfolio-review__2026-04-25__技术小甜甜",
+      "state": "reviewed",
+      "notes": "column portfolio review generated",
+      "source_path": "/mnt/e/个人项目/CSDN账号运营/automation-system/data/business/column_portfolio/column-portfolio-review_2026-04-25_技术小甜甜.json",
+      "attributes": {
+        "date": "2026-04-25",
+        "account": "技术小甜甜",
+        "column_count": 3
+      },
+      "created_at": "2026-04-27T03:04:49Z",
+      "updated_at": "2026-04-27T03:04:49Z",
+      "history_count": 1,
+      "record_path": "/mnt/e/个人项目/CSDN账号运营/automation-system/data/state/ledger/column_allocation/portfolio-review__2026-04-25__技术小甜甜.json"
+    },
+    {
+      "object_type": "column_allocation",
+      "object_id": "portfolio-review__2026-04-27__技术小甜甜",
+      "state": "reviewed",
+      "notes": "column portfolio review generated",
+      "source_path": "/mnt/e/个人项目/CSDN账号运营/automation-system/data/business/column_portfolio/column-portfolio-review_2026-04-27_技术小甜甜.json",
+      "attributes": {
+        "date": "2026-04-27",
+        "account": "技术小甜甜",
+        "column_count": 3
+      },
+      "created_at": "2026-04-27T03:08:53Z",
+      "updated_at": "2026-04-27T03:08:53Z",
+      "history_count": 1,
+      "record_path": "/mnt/e/个人项目/CSDN账号运营/automation-system/data/state/ledger/column_allocation/portfolio-review__2026-04-27__技术小甜甜.json"
+    },
+    {
+      "object_type": "column_allocation",
+      "object_id": "portfolio-review__2026-04-28__技术小甜甜",
+      "state": "reviewed",
+      "notes": "column portfolio review generated",
+      "source_path": "/mnt/e/个人项目/CSDN账号运营/automation-system/data/business/column_portfolio/column-portfolio-review_2026-04-28_技术小甜甜.json",
+      "attributes": {
+        "date": "2026-04-28",
+        "account": "技术小甜甜",
+        "column_count": 3
+      },
+      "created_at": "2026-04-27T03:21:11Z",
+      "updated_at": "2026-04-27T03:21:11Z",
+      "history_count": 1,
+      "record_path": "/mnt/e/个人项目/CSDN账号运营/automation-system/data/state/ledger/column_allocation/portfolio-review__2026-04-28__技术小甜甜.json"
+    }
+  ]
+}

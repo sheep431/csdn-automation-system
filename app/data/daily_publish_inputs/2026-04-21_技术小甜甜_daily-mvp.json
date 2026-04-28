@@ -1,0 +1,62 @@
+{
+  "date": "2026-04-21",
+  "account": "技术小甜甜",
+  "slot_count": 2,
+  "strategy": "new-account-only MVP: two posts per day, prefer two different columns to activate multiple selling points.",
+  "capture_path": "data/intel/accounts/2026-04-21_技术小甜甜_full.json",
+  "slots": [
+    {
+      "slot_id": "2026-04-21-new-main-1",
+      "account_profile": "new-main",
+      "account_name": "技术小甜甜",
+      "goal": "revenue",
+      "title": "[Dify实战] 工作流调试总卡在中间节点？一套可复用的排查 checklist",
+      "topic": "AI实践-Dify专栏 延续选题",
+      "audience": "已经关注 AI实践-Dify专栏 且愿意继续购买/阅读该专栏的读者",
+      "column": "AI实践-Dify专栏",
+      "angle": "基于该专栏历史存量内容，优先补下一个工程缺口或进阶实操点",
+      "value": "当日两篇尽量分专栏，形成两个售卖点同时发力，而不是同一专栏连发两篇",
+      "cta": "如果你认可这个方向，我可以继续把它扩成 AI实践-Dify专栏 的正文初稿。",
+      "why_now": "该专栏当前已上架，历史文章数 191，且本次 daily MVP 明确要求两篇尽量分属不同专栏。",
+      "keywords": [
+        "AI实践-Dify专栏",
+        "历史延续",
+        "专栏MVP"
+      ],
+      "outline": [
+        "先回顾 AI实践-Dify专栏 里已经讲过什么",
+        "指出当前还缺哪一块",
+        "给出这篇补位内容的完整结构",
+        "自然承接到专栏购买/后续文章"
+      ],
+      "notes": "来源：full account capture data/intel/accounts/2026-04-21_技术小甜甜_full.json"
+    },
+    {
+      "slot_id": "2026-04-21-new-main-2",
+      "account_profile": "new-main",
+      "account_name": "技术小甜甜",
+      "goal": "revenue",
+      "title": "[ComfyUI-图片与视频生成] 基于历史内容延续的下一篇实战题",
+      "topic": "ComfyUI-图片与视频生成 延续选题",
+      "audience": "已经关注 ComfyUI-图片与视频生成 且愿意继续购买/阅读该专栏的读者",
+      "column": "ComfyUI-图片与视频生成",
+      "angle": "基于该专栏历史存量内容，优先补下一个工程缺口或进阶实操点",
+      "value": "当日两篇尽量分专栏，形成两个售卖点同时发力，而不是同一专栏连发两篇",
+      "cta": "如果你认可这个方向，我可以继续把它扩成 ComfyUI-图片与视频生成 的正文初稿。",
+      "why_now": "该专栏当前已上架，历史文章数 46，且本次 daily MVP 明确要求两篇尽量分属不同专栏。",
+      "keywords": [
+        "ComfyUI-图片与视频生成",
+        "历史延续",
+        "专栏MVP"
+      ],
+      "outline": [
+        "先回顾 ComfyUI-图片与视频生成 里已经讲过什么",
+        "指出当前还缺哪一块",
+        "给出这篇补位内容的完整结构",
+        "自然承接到专栏购买/后续文章"
+      ],
+      "notes": "来源：full account capture data/intel/accounts/2026-04-21_技术小甜甜_full.json"
+    }
+  ],
+  "generated_at": "2026-04-21T14:41:28Z"
+}

@@ -1,0 +1,30 @@
+{
+  "date": "2026-04-25",
+  "account": "技术小甜甜",
+  "allocation_count": 2,
+  "allocations": [
+    {
+      "slot_index": 1,
+      "column": "AI实践-Dify专栏",
+      "role": "flagship_revenue",
+      "lifecycle_state": "active_revenue",
+      "score": null,
+      "rationale": "当前账号 live 内容已经聚焦 Dify 主线，这个选题正好补上状态管理缺口，适合作为连续更新的旗舰主更",
+      "source_signals": []
+    },
+    {
+      "slot_index": 2,
+      "column": "企业级AI落地实战：从模型部署到应用系统",
+      "role": "secondary_revenue",
+      "lifecycle_state": "active_revenue",
+      "score": null,
+      "rationale": "content-ops 既有今日规则明确建议当日双更尽量分散到不同专栏；除 Dify 旗舰主更外，企业级AI落地专栏是当前最适合承接第二篇并发展第二收益点的专栏",
+      "source_signals": []
+    }
+  ],
+  "notes": "从 prepare-publish-day 自动生成的当日专栏分配",
+  "source_signals": [
+    "/mnt/e/个人项目/CSDN账号运营/automation-system/data/daily_publish/2026-04-25/publish-day_2026-04-25.json"
+  ],
+  "generated_at": "2026-04-27T03:04:46Z"
+}

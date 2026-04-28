@@ -1,0 +1,10 @@
+{
+  "article_id": "csdn-test-001",
+  "title": "Python 自动化任务的幂等控制实践",
+  "body_markdown": "# 前言\n\n这是第一篇测试文章，用于验证 CSDN 自动发文草稿保存链路。\n\n## 核心点\n\n1. 幂等控制\n2. 日志记录\n3. 异常截图\n\n```python\nprint('hello csdn')\n```",
+  "tags": ["Python", "自动化", "工程化"],
+  "category": "Python",
+  "summary": "介绍自动化发布系统中的幂等设计。",
+  "publish_mode": "draft",
+  "source": "manual"
+}
