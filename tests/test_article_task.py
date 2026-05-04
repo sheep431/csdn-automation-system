@@ -54,3 +54,20 @@ def test_publishable_requires_tags_when_publish_mode_enabled():
         assert False, "expected ValueError"
     except ValueError as exc:
         assert "requires at least one tag" in str(exc)
+
+
+def test_publishable_requires_category_when_publish_mode_enabled():
+    task = ArticleTask(
+        article_id="csdn-test-002",
+        title="测试标题",
+        body_markdown="# 正文",
+        tags=["人工智能"],
+        category=None,
+        publish_mode=PublishMode.PUBLISH,
+    )
+
+    try:
+        task.validate_publishable(allow_publish=True)
+        assert False, "expected ValueError"
+    except ValueError as exc:
+        assert "requires category" in str(exc)

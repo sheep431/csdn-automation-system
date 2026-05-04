@@ -3,7 +3,7 @@ from pathlib import Path
 
 from typer.testing import CliRunner
 
-from app.business.ops import is_topic_used, mark_topic_used, topic_usage_report
+from app.business.ops import build_baseline_topic_libraries_from_full_capture, is_topic_used, mark_topic_used, mark_topic_published_from_execution, topic_usage_report
 from app.main import app
 
 runner = CliRunner()
@@ -49,8 +49,53 @@ def _batch_with_topics(tmp_path: Path) -> Path:
     return batch_path
 
 
+def _build_library_for_batch(tmp_path: Path) -> Path:
+    capture = tmp_path / "full.json"
+    capture.write_text(
+        json.dumps(
+            {
+                "columns": [
+                    {
+                        "title": "专栏增长",
+                        "description": "测试专栏",
+                        "articles": [{"title": "旧文 1"}],
+                    }
+                ]
+            },
+            ensure_ascii=False,
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
+    result = build_baseline_topic_libraries_from_full_capture(
+        date="2026-04-20",
+        account="技术小甜甜",
+        capture_path=capture,
+        base_dir=tmp_path,
+    )
+    library_path = Path(result["libraries"][0]["json_path"])
+    payload = json.loads(library_path.read_text(encoding="utf-8"))
+    payload["modules"] = [
+        {
+            "module": "growth-module",
+            "name": "增长模块",
+            "goal": "测试",
+            "role": "引流题",
+            "status": "partial",
+            "keywords": ["增长"],
+            "candidate_topics": [
+                {"candidate_id": "test-account::专栏增长::growth-module::01", "title": "选题 A", "status": "unused", "source": "baseline_library", "role": "引流题", "module": "growth-module"},
+                {"candidate_id": "test-account::专栏增长::growth-module::02", "title": "选题 B", "status": "unused", "source": "baseline_library", "role": "引流题", "module": "growth-module"},
+            ],
+        }
+    ]
+    library_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+    return library_path
+
+
 def test_mark_topic_used_records_ledger_and_is_detectable(tmp_path: Path):
     batch_path = _batch_with_topics(tmp_path)
+    _build_library_for_batch(tmp_path)
 
     result = mark_topic_used(
         date="2026-04-20",
@@ -71,7 +116,47 @@ def test_mark_topic_used_records_ledger_and_is_detectable(tmp_path: Path):
     assert entry["status"] == "used"
     assert is_topic_used(title="选题 B", base_dir=tmp_path, account="技术小甜甜") is True
     assert is_topic_used(title="选题 X", base_dir=tmp_path, account="技术小甜甜") is False
+    library_payload = json.loads(result["topic_library_json_path"].read_text(encoding="utf-8"))
+    candidate = library_payload["modules"][0]["candidate_topics"][1]
+    assert candidate["title"] == "选题 B"
+    assert candidate["status"] == "used"
 
+
+
+def test_mark_topic_published_from_execution_updates_existing_entry_and_library(tmp_path: Path):
+    batch_path = _batch_with_topics(tmp_path)
+    library_path = _build_library_for_batch(tmp_path)
+
+    mark_topic_used(
+        date="2026-04-20",
+        batch_path=batch_path,
+        topic_number=2,
+        status="used",
+        base_dir=tmp_path,
+        notes="已进入草稿阶段",
+    )
+
+    result = mark_topic_published_from_execution(
+        date="2026-04-21",
+        account="技术小甜甜",
+        title="选题 B",
+        column="专栏增长",
+        base_dir=tmp_path,
+        notes="正式发布成功: https://example.com/article/2",
+    )
+
+    ledger = json.loads(result["ledger_path"].read_text(encoding="utf-8"))
+    entry = next(item for item in ledger["entries"] if item["title"] == "选题 B")
+    assert entry["status"] == "published"
+    assert entry["last_topic_number"] == 2
+    assert entry["notes"] == "正式发布成功: https://example.com/article/2"
+    assert any(h["status"] == "published" for h in entry["history"])
+
+    library_payload = json.loads(library_path.read_text(encoding="utf-8"))
+    candidate = library_payload["modules"][0]["candidate_topics"][1]
+    assert candidate["title"] == "选题 B"
+    assert candidate["status"] == "published"
+    assert candidate["notes"] == "正式发布成功: https://example.com/article/2"
 
 
 def test_topic_usage_report_summarizes_usage(tmp_path: Path):

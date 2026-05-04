@@ -5,6 +5,7 @@ from typer.testing import CliRunner
 
 from app.main import app
 from app.business.live_topic_batch import plan_topic_batch_from_live
+from app.business.ops import build_baseline_topic_libraries_from_full_capture
 
 runner = CliRunner()
 
@@ -70,6 +71,12 @@ def _write_full_capture_for_live_batch(tmp_path: Path) -> Path:
 def test_plan_topic_batch_from_live_requires_real_snapshot_and_avoids_recent_titles(tmp_path: Path):
     snapshot_path = _write_live_snapshot(tmp_path)
     _write_full_capture_for_live_batch(tmp_path)
+    build_baseline_topic_libraries_from_full_capture(
+        date="2026-04-21",
+        account="技术小甜甜",
+        capture_path=tmp_path / "data" / "intel" / "accounts" / "2026-04-21_技术小甜甜_full.json",
+        base_dir=tmp_path,
+    )
 
     business_strategy = tmp_path / "data" / "business" / "strategy_outputs"
     business_columns = tmp_path / "data" / "business" / "columns"
@@ -148,10 +155,18 @@ def test_plan_topic_batch_from_live_requires_real_snapshot_and_avoids_recent_tit
     }
     generated_titles = {topic["title"] for topic in batch["topics"]}
     assert recent_titles.isdisjoint(generated_titles)
-    assert any("多轮对话状态管理" in title or "召回不全" in title for title in generated_titles)
+    assert batch["topics"][0]["reason"].startswith("优先从专栏基线题库中选题")
+    assert batch["topics"][0]["candidate_id"]
+    assert batch["topics"][0]["topic_source"] == "baseline_library"
+    assert batch.get("candidate_focuses")
+    assert any(focus in {"企业助手", "知识库问答", "工作流自动化", "智能体"} for focus in batch["candidate_focuses"])
     assert batch["topics"][0]["column"] == "AI实践-Dify专栏"
     assert batch["topics"][1]["column"] == "企业级AI落地实战：从模型部署到应用系统"
-    assert any("different columns" in item for item in batch.get("changes_from_previous", []))
+    assert any("historical article dedupe" in item for item in batch.get("changes_from_previous", []))
+    assert any("primary baseline library:" in item for item in batch.get("source_signals", []))
+    assert any("secondary baseline library:" in item for item in batch.get("source_signals", []))
+    assert any("resolved full capture:" in item for item in batch.get("source_signals", []))
+    assert any("historical article/title count used for dedupe:" in item for item in batch.get("source_signals", []))
     scorer_signal = next(item for item in batch.get("source_signals", []) if item.startswith("secondary column scorer:"))
     assert "selected=企业级AI落地实战：从模型部署到应用系统" in scorer_signal
     assert "付费专栏" in scorer_signal

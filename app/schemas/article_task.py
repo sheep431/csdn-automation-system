@@ -79,6 +79,9 @@ class ArticleTask(BaseModel):
         if self.publish_mode == PublishMode.PUBLISH and len(self.tags) == 0:
             raise ValueError("publish mode requires at least one tag")
 
+        if self.publish_mode == PublishMode.PUBLISH and not (self.category or "").strip():
+            raise ValueError("publish mode requires category")
+
     def content_hash(self) -> str:
         raw = f"{self.article_id}\n{self.title}\n{self.body_markdown}"
         return sha256(raw.encode("utf-8")).hexdigest()

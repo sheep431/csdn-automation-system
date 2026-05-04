@@ -4,8 +4,9 @@ import asyncio
 
 from playwright.async_api import Page
 
-from app.config import ALLOW_PUBLISH, RETRY_BACKOFF_SECONDS
+from app.config import ALLOW_PUBLISH, BASE_DIR, RETRY_BACKOFF_SECONDS
 from app.browser.session_manager import BrowserSessionManager
+from app.business.ops import mark_topic_published_from_execution
 from app.logging.artifact_manager import ArtifactManager
 from app.logging.event_logger import EventLogger
 from app.publishers.csdn_publisher import (
@@ -29,9 +30,10 @@ class DebugStop(Exception):
 
 
 class ExecutionRunner:
-    def __init__(self, store: TaskStore, profile_name: str | None = None) -> None:
+    def __init__(self, store: TaskStore, profile_name: str | None = None, base_dir=None) -> None:
         self.store = store
         self.profile_name = profile_name
+        self.base_dir = BASE_DIR if base_dir is None else base_dir
         self.logger = EventLogger()
         self.artifacts = ArtifactManager()
         self.retry_policy = RetryPolicy()
@@ -166,7 +168,7 @@ class ExecutionRunner:
             message="opening csdn editor",
         )
         await publisher.validate_task(task)
-        await publisher.open_editor()
+        await publisher.open_editor(task)
         self._check_debug_stop(result.final_stage, debug_stage)
 
         result.final_stage = ExecutionStage.CHECK_LOGIN
@@ -463,6 +465,24 @@ class ExecutionRunner:
             draft_url=result.draft_url,
             article_url=result.article_url,
         )
+        if task.publish_mode == PublishMode.PUBLISH and result.article_url:
+            account_profile = str(task.metadata.get("account_profile") or self.profile_name or "").strip()
+            account = str(task.metadata.get("account") or task.metadata.get("account_name") or "").strip()
+            if not account:
+                account = {
+                    "new-main": "技术小甜甜",
+                    "old-traffic": "踏雪无痕老爷子",
+                }.get(account_profile, "技术小甜甜")
+            note = f"正式发布成功: {result.article_url}"
+            mark_topic_published_from_execution(
+                date=(result.ended_at or result.started_at or "")[:10],
+                account=account,
+                title=task.title,
+                column=task.category,
+                base_dir=self.base_dir,
+                notes=note,
+                candidate_id=str(task.metadata.get("candidate_id") or "").strip() or None,
+            )
         self.logger.info(
             task_id=task.task_id,
             article_id=task.article_id,

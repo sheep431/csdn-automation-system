@@ -2,14 +2,18 @@ from __future__ import annotations
 
 import asyncio
 import json
+import threading
 import uuid
+from datetime import datetime
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from urllib.parse import urlparse
 
 import typer
 from rich import print
 
 from app.browser.session_manager import BrowserSessionManager
-from app.business.ops import create_topic_brief, build_column_asset, build_strategy_output, propose_strategy_change, auto_propose_strategy_change, approve_strategy_change, mark_topic_used, process_topic_batch_feedback, review_business, topic_usage_report, write_topic_batch_files
+from app.business.ops import create_topic_brief, build_column_asset, build_baseline_column_assets_from_full_capture, build_baseline_topic_libraries_from_full_capture, build_strategy_output, build_topic_library_dashboard, propose_strategy_change, auto_propose_strategy_change, approve_strategy_change, mark_topic_used, process_topic_batch_feedback, review_business, topic_usage_report, write_topic_batch_files
 from app.business.live_topic_batch import plan_topic_batch_from_live
 from app.config import (
     DATA_DIR,
@@ -54,6 +58,7 @@ from app.schemas.enums import ExecutionStage, TaskStatus
 from app.schemas.execution_result import ExecutionResult
 from app.store.task_store import TaskStore
 from app.task_queue.markdown_queue import enqueue_markdown_drafts
+from app.task_queue.publish_queue import prepare_publish_task
 from app.task_queue.review_gate import is_task_ready_for_execution
 
 app = typer.Typer(help="CSDN automation project CLI")
@@ -152,6 +157,8 @@ def enqueue_markdown(
     output_dir: Path = typer.Option(PENDING_TASK_DIR, "--output-dir", file_okay=False, help="Where to write pending task JSON files"),
     profile: str = typer.Option("default", "--profile", help="Target browser/account profile for these drafts"),
     source: str = typer.Option("generated", "--source", help="Task source label for queued drafts"),
+    review_status: str = typer.Option("pending", "--review-status", help="Review gate status: pending/approved/needs_revision"),
+    requires_human_review: bool = typer.Option(True, "--requires-human-review/--no-requires-human-review", help="Whether these drafts should be blocked until human approval"),
 ) -> None:
     ensure_directories()
     profile_name = normalize_profile_name(profile)
@@ -160,6 +167,8 @@ def enqueue_markdown(
         output_dir=output_dir,
         profile=profile_name,
         source=source,
+        review_status=review_status,
+        requires_human_review=requires_human_review,
     )
 
     if not created:
@@ -169,6 +178,17 @@ def enqueue_markdown(
     print(f"[green]Queued {len(created)} draft task(s)[/green] for profile [cyan]{profile_name}[/cyan]")
     for path in created:
         print(f" - {path}")
+
+
+@app.command("prepare-publish-task")
+def prepare_publish_task_cmd(
+    source_task_path: Path = typer.Option(..., "--source-task-path", exists=True, readable=True, help="Existing draft task JSON to promote for publish"),
+    output_path: Path = typer.Option(..., "--output-path", help="Where to write the publish-mode task JSON"),
+) -> None:
+    store = build_store()
+    store.init_db()
+    result_path = prepare_publish_task(source_task_path=source_task_path, output_path=output_path, store=store)
+    print(f"[green]Publish task ready[/green] {result_path}")
 
 
 @app.command("plan-day")
@@ -382,6 +402,190 @@ def build_column_asset_cmd(
     )
     print("[green]Column asset saved[/green]")
     print(json.dumps({key: str(value) for key, value in result.items()}, ensure_ascii=False, indent=2))
+
+
+@app.command("build-column-baseline-from-full")
+def build_column_baseline_from_full_cmd(
+    date: str = typer.Option(..., "--date", help="Baseline date, format YYYY-MM-DD"),
+    account: str = typer.Option(..., "--account", help="Account name"),
+    capture_path: Path = typer.Option(..., "--capture-path", exists=True, readable=True, help="Full account capture JSON path"),
+    base_dir: Path | None = typer.Option(None, "--base-dir", file_okay=False, help="Root directory to store business data"),
+) -> None:
+    result = build_baseline_column_assets_from_full_capture(
+        date=date,
+        account=account,
+        capture_path=capture_path,
+        base_dir=base_dir,
+    )
+    print("[green]Column baseline assets saved[/green]")
+    print(json.dumps(result, ensure_ascii=False, indent=2))
+
+
+@app.command("build-topic-library-baseline-from-full")
+def build_topic_library_baseline_from_full_cmd(
+    date: str = typer.Option(..., "--date", help="Baseline date, format YYYY-MM-DD"),
+    account: str = typer.Option(..., "--account", help="Account name"),
+    capture_path: Path = typer.Option(..., "--capture-path", exists=True, readable=True, help="Full account capture JSON path"),
+    base_dir: Path | None = typer.Option(None, "--base-dir", file_okay=False, help="Root directory to store business data"),
+) -> None:
+    result = build_baseline_topic_libraries_from_full_capture(
+        date=date,
+        account=account,
+        capture_path=capture_path,
+        base_dir=base_dir,
+    )
+    print("[green]Topic library baseline saved[/green]")
+    print(json.dumps(result, ensure_ascii=False, indent=2))
+
+
+@app.command("build-topic-library-dashboard")
+def build_topic_library_dashboard_cmd(
+    account: str = typer.Option(..., "--account", help="Account name"),
+    base_dir: Path | None = typer.Option(None, "--base-dir", file_okay=False, help="Root directory to read business/state data"),
+    output_path: Path | None = typer.Option(None, "--output-path", help="Optional explicit dashboard html path"),
+) -> None:
+    path = build_topic_library_dashboard(account=account, base_dir=base_dir, output_path=output_path)
+    print(f"[green]Topic library dashboard saved[/green] {path}")
+
+
+@app.command("serve-topic-library-dashboard")
+def serve_topic_library_dashboard_cmd(
+    account: str = typer.Option(..., "--account", help="Account name"),
+    host: str = typer.Option("127.0.0.1", "--host", help="Bind host"),
+    port: int = typer.Option(8787, "--port", min=1, max=65535, help="Bind port"),
+    profile: str | None = typer.Option(None, "--profile", help="Browser profile for dashboard calibration actions, e.g. new-main / old-traffic"),
+    base_dir: Path | None = typer.Option(None, "--base-dir", file_okay=False, help="Root directory to read business/state data"),
+) -> None:
+    project_root = base_dir or DATA_DIR.parent
+    resolved_profile = profile or ("new-main" if account == "技术小甜甜" else None)
+    action_lock = threading.Lock()
+    action_state: dict[str, str] = {}
+
+    def _write_json(handler: BaseHTTPRequestHandler, status_code: int, payload: dict[str, object]) -> None:
+        body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
+        handler.send_response(status_code)
+        handler.send_header("Content-Type", "application/json; charset=utf-8")
+        handler.send_header("Cache-Control", "no-store")
+        handler.send_header("Content-Length", str(len(body)))
+        handler.end_headers()
+        handler.wfile.write(body)
+
+    def _run_dashboard_calibration() -> dict[str, object]:
+        if not resolved_profile:
+            raise ValueError("dashboard calibration requires a browser profile; restart server with --profile")
+        date = datetime.utcnow().strftime("%Y-%m-%d")
+        capture_result = asyncio.run(
+            capture_full_account_content(
+                date=date,
+                account=account,
+                profile=resolved_profile,
+                base_dir=base_dir,
+            )
+        )
+        column_result = build_baseline_column_assets_from_full_capture(
+            date=date,
+            account=account,
+            capture_path=capture_result["json_path"],
+            base_dir=base_dir,
+        )
+        library_result = build_baseline_topic_libraries_from_full_capture(
+            date=date,
+            account=account,
+            capture_path=capture_result["json_path"],
+            base_dir=base_dir,
+        )
+        message = f"baseline 校准完成：{date}，更新 {library_result['created_count']} 个题库 / {column_result['created_count']} 个专栏资产"
+        action_state["status_message"] = message
+        return {
+            "ok": True,
+            "message": message,
+            "date": date,
+            "capture_path": str(capture_result["json_path"]),
+            "library_count": library_result["created_count"],
+            "column_count": column_result["created_count"],
+        }
+
+    class DashboardHandler(BaseHTTPRequestHandler):
+        def do_GET(self) -> None:  # noqa: N802
+            parsed = urlparse(self.path)
+            if parsed.path == "/health":
+                body = b"ok"
+                self.send_response(200)
+                self.send_header("Content-Type", "text/plain; charset=utf-8")
+                self.send_header("Content-Length", str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+                return
+
+            if parsed.path not in {"/", "/index.html"}:
+                body = b"not found"
+                self.send_response(404)
+                self.send_header("Content-Type", "text/plain; charset=utf-8")
+                self.send_header("Content-Length", str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+                return
+
+            output_path = project_root / "docs" / "specs" / "topic-library-dashboard.live.html"
+            build_topic_library_dashboard(
+                account=account,
+                base_dir=base_dir,
+                output_path=output_path,
+                action_config={
+                    "calibrate_path": "/actions/calibrate",
+                    "can_calibrate": bool(resolved_profile),
+                    "calibrate_label": "校准 baseline",
+                    "disabled_reason": "当前服务未配置 profile，无法从页面直接校准 baseline" if not resolved_profile else "",
+                    "status_message": action_state.get("status_message", ""),
+                },
+            )
+            body = output_path.read_bytes()
+            self.send_response(200)
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.send_header("Cache-Control", "no-store")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+
+        def do_POST(self) -> None:  # noqa: N802
+            parsed = urlparse(self.path)
+            if parsed.path != "/actions/calibrate":
+                _write_json(self, 404, {"ok": False, "error": "not found"})
+                return
+            if not resolved_profile:
+                _write_json(self, 400, {"ok": False, "error": "dashboard calibration requires --profile"})
+                return
+            if not action_lock.acquire(blocking=False):
+                _write_json(self, 409, {"ok": False, "error": "calibration already running"})
+                return
+            try:
+                payload = _run_dashboard_calibration()
+            except Exception as exc:
+                action_state["status_message"] = f"baseline 校准失败：{exc}"
+                _write_json(self, 500, {"ok": False, "error": str(exc)})
+            else:
+                _write_json(self, 200, payload)
+            finally:
+                action_lock.release()
+
+        def log_message(self, format: str, *args) -> None:  # noqa: A003
+            return
+
+    server = ThreadingHTTPServer((host, port), DashboardHandler)
+    url = f"http://{host}:{port}"
+    print(f"[green]Topic library dashboard server running[/green] {url}")
+    print(f"[cyan]Refresh this URL any time to read the latest topic-library state.[/cyan]")
+    if resolved_profile:
+        print(f"[cyan]Dashboard calibration profile:[/cyan] {resolved_profile}")
+    else:
+        print("[yellow]Dashboard calibration button will be disabled until you restart with --profile.[/yellow]")
+    print("[cyan]Health check:[/cyan] " + url + "/health")
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        print("\n[yellow]Dashboard server stopped[/yellow]")
+    finally:
+        server.server_close()
 
 
 @app.command("propose-strategy-change")
