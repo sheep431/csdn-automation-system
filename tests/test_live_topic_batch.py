@@ -167,6 +167,9 @@ def test_plan_topic_batch_from_live_requires_real_snapshot_and_avoids_recent_tit
     assert any("secondary baseline library:" in item for item in batch.get("source_signals", []))
     assert any("resolved full capture:" in item for item in batch.get("source_signals", []))
     assert any("historical article/title count used for dedupe:" in item for item in batch.get("source_signals", []))
+    assert any("three positive sources" in item for item in batch.get("changes_from_previous", []))
+    assert any("repeated concept/method coverage" in item for item in batch.get("changes_from_previous", []))
+    assert batch["topics"][0].get("selection_reasons")
     scorer_signal = next(item for item in batch.get("source_signals", []) if item.startswith("secondary column scorer:"))
     assert "selected=企业级AI落地实战：从模型部署到应用系统" in scorer_signal
     assert "付费专栏" in scorer_signal

@@ -10,3 +10,17 @@ Thumbs.db
 data/browser_state/
 data/logs/
 data/*.db
+
+# Generated runtime / ops artifacts
+/data/daily_publish/
+/data/intel/accounts/
+/data/review_packages/
+/data/screenshots/
+/data/snapshots/
+/data/tasks/
+/data/business/columns/
+/data/business/topic_batches/
+/data/business/topic_libraries/
+/data/business/topic_usage/
+/data/business/playbooks/
+/docs/plans/

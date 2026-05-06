@@ -78,6 +78,36 @@ def test_process_topic_batch_feedback_writes_feedback_and_learning_files(tmp_pat
     assert any(rule["pattern"] == "实操避坑题" for rule in learning_payload["rules"])
 
 
+def test_process_topic_batch_feedback_strengthens_planning_logic_rules(tmp_path: Path):
+    batch_path = _sample_batch(tmp_path)
+
+    result = process_topic_batch_feedback(
+        date="2026-05-06",
+        batch_path=batch_path,
+        feedback=(
+            "补强一下选题逻辑吧。正向考虑3个来源，一个是宏观结构上补完，追加板块，"
+            "第二个是细节和场景上挖深，聚焦细节问题，第三个是热点上关联引出。"
+            "负面注意避免三种情况，一个是题目基本重复要避免，一个是内容上已经讨论过的"
+            "概念方法避免反复重复去写。"
+        ),
+        base_dir=tmp_path,
+        account="技术小甜甜",
+    )
+
+    feedback_payload = json.loads(result["feedback_json_path"].read_text(encoding="utf-8"))
+    learning_payload = json.loads(result["rules_json_path"].read_text(encoding="utf-8"))
+
+    patterns = {rule["pattern"] for rule in feedback_payload["normalized_rules"]}
+    assert "结构补位题" in patterns
+    assert "细节场景深挖题" in patterns
+    assert "热点关联题" in patterns
+    assert "近似重复题目" in patterns
+    assert "已讨论概念/方法重复题" in patterns
+
+    persisted_patterns = {rule["pattern"] for rule in learning_payload["rules"]}
+    assert patterns <= persisted_patterns
+
+
 def test_apply_topic_feedback_cli_creates_revised_batch(tmp_path: Path):
     batch_path = _sample_batch(tmp_path)
 

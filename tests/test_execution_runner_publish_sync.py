@@ -145,3 +145,33 @@ def test_execution_runner_persist_success_auto_syncs_published_topic_state(tmp_p
     library_payload = json.loads(library_path.read_text(encoding='utf-8'))
     candidate = library_payload['modules'][0]['candidate_topics'][1]
     assert candidate['status'] == 'published'
+
+
+def test_execution_runner_post_publish_coupon_followup_creates_recommendation_report(tmp_path: Path):
+    _build_library(tmp_path)
+    db_path = tmp_path / 'tasks.db'
+    store = TaskStore(db_path)
+    store.init_db()
+    task = ArticleTask(
+        task_id='task_coupon_followup',
+        article_id='new-main-2026-05-04-new-main-1_dify-_draft',
+        title='刚发布文章',
+        body_markdown='# 刚发布文章\n\n正文',
+        tags=['Dify'],
+        category='AI实践-Dify专栏',
+        publish_mode=PublishMode.PUBLISH,
+        metadata={'account_profile': 'new-main'},
+    )
+    result = ExecutionResult.started(task_id=task.task_id, article_id=task.article_id, publish_mode=PublishMode.PUBLISH)
+    result.finish(status=TaskStatus.SUCCESS, final_stage=ExecutionStage.DONE, article_url='https://mp.csdn.net/mp_blog/creation/success/123456')
+    runner = ExecutionRunner(store, profile_name='new-main', base_dir=tmp_path)
+    followup = runner._run_post_publish_coupon_followup(
+        task,
+        result,
+        page_texts=['恭喜你获得 1 张流量券，可用于本次作品推广'],
+    )
+    assert followup is not None
+    assert followup['coupon']['has_coupon'] is True
+    assert followup['report_path'].exists()
+    assert followup['recommendation'] is not None
+

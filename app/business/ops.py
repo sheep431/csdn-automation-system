@@ -1715,38 +1715,40 @@ def _normalize_feedback_rules(feedback: str) -> list[dict[str, str]]:
     rules: list[dict[str, str]] = []
     normalized = feedback.replace("\n", " ")
 
+    def add_rule(rule_type: str, pattern: str, reason: str) -> None:
+        if any(item["rule_type"] == rule_type and item["pattern"] == pattern for item in rules):
+            return
+        rules.append(
+            {
+                "rule_type": rule_type,
+                "pattern": pattern,
+                "reason": reason,
+            }
+        )
+
     if "少来" in normalized and ("概念题" in normalized or "纯概念题" in normalized):
-        rules.append(
-            {
-                "rule_type": "downweight",
-                "pattern": "纯概念题",
-                "reason": "用户明确要求减少纯概念题",
-            }
-        )
+        add_rule("downweight", "纯概念题", "用户明确要求减少纯概念题")
     if ("多来一点" in normalized or "提高" in normalized) and ("专栏点击" in normalized or "转化" in normalized):
-        rules.append(
-            {
-                "rule_type": "upweight",
-                "pattern": "高转化题",
-                "reason": "用户希望提高专栏点击或转化相关题材占比",
-            }
-        )
+        add_rule("upweight", "高转化题", "用户希望提高专栏点击或转化相关题材占比")
     if "实操" in normalized or "避坑" in normalized:
-        rules.append(
-            {
-                "rule_type": "upweight",
-                "pattern": "实操避坑题",
-                "reason": "用户偏好更具体、更可执行的实操题",
-            }
-        )
+        add_rule("upweight", "实操避坑题", "用户偏好更具体、更可执行的实操题")
     if "新号" in normalized:
-        rules.append(
-            {
-                "rule_type": "prefer_account",
-                "pattern": "技术小甜甜",
-                "reason": "用户反馈涉及新号优先承接相关题材",
-            }
-        )
+        add_rule("prefer_account", "技术小甜甜", "用户反馈涉及新号优先承接相关题材")
+
+    if any(token in normalized for token in ("结构上补完", "结构补完", "补完", "追加板块", "补齐结构", "补结构")):
+        add_rule("upweight", "结构补位题", "用户要求优先从专栏宏观结构空缺出发补齐板块")
+    if any(token in normalized for token in ("细节和场景上挖深", "场景上挖深", "聚焦细节问题", "细节问题", "场景问题", "挖深")):
+        add_rule("upweight", "细节场景深挖题", "用户要求围绕细节问题和真实场景继续深挖")
+    if any(token in normalized for token in ("热点上关联引出", "热点关联", "关联引出", "热点上", "热点")):
+        add_rule("upweight", "热点关联题", "用户要求把热点作为关联切口而不是脱离基线单独出题")
+    if any(token in normalized for token in ("题目基本重复", "题目重复", "基本重复", "重复题目")):
+        add_rule("downweight", "近似重复题目", "用户要求避免标题层面的近似重复")
+    if (
+        "已经讨论过" in normalized
+        or "已经有讨论过" in normalized
+        or "反复重复去写" in normalized
+    ) and any(token in normalized for token in ("概念方法", "概念", "方法")):
+        add_rule("downweight", "已讨论概念/方法重复题", "用户要求避免对已讨论过的概念或方法反复重复写作")
     return rules
 
 

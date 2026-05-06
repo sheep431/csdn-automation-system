@@ -498,28 +498,274 @@ def _select_focuses(cluster: str, corpus: str) -> list[str]:
     return focuses
 
 
-def _generate_cluster_candidates(cluster: str, focuses: list[str], history_keys: set[str], account: str) -> list[dict[str, str]]:
+def _keyword_hit_count(text: str, keywords: list[str]) -> int:
+    corpus = (text or "").lower()
+    return sum(1 for keyword in keywords if keyword and keyword.lower() in corpus)
+
+
+def _load_library_module_statuses(*, base_dir: Path | None, account: str, column: str) -> dict[str, str]:
+    path = _latest_library_path(base_dir=base_dir, account=account, column=column)
+    if path is None:
+        return {}
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+    statuses: dict[str, str] = {}
+    for module in payload.get("modules", []):
+        if not isinstance(module, dict):
+            continue
+        module_key = str(module.get("module") or "").strip()
+        status = str(module.get("status") or "").strip()
+        if module_key:
+            statuses[module_key] = status
+    return statuses
+
+
+def _candidate_type_rank(candidate_type: str) -> float:
+    if candidate_type == "structure_gap":
+        return 3.0
+    if candidate_type == "depth_detail":
+        return 2.0
+    if candidate_type == "hot_bridge":
+        return 1.0
+    return 0.0
+
+
+def _infer_candidate_source_reason(candidate_type: str) -> str:
+    if candidate_type == "structure_gap":
+        return "优先补宏观结构缺口，追加还没系统覆盖的板块。"
+    if candidate_type == "depth_detail":
+        return "优先往细节问题和真实场景继续挖深，而不是重复泛泛讲概念。"
+    if candidate_type == "hot_bridge":
+        return "结合热点和当前主线做桥接，把外部关注点引回可落地主题。"
+    return "结合实时标题、历史内容和经营信号做结构化补位。"
+
+
+def _candidate_concept_repeat_score(candidate: dict[str, object], historical_titles: list[str]) -> tuple[int, list[str]]:
+    concept_keywords = [str(item) for item in candidate.get("concept_keywords") or [] if str(item).strip()]
+    method_keywords = [str(item) for item in candidate.get("method_keywords") or [] if str(item).strip()]
+    if not concept_keywords and not method_keywords:
+        return 0, []
+
+    evidence: list[str] = []
+    repeat_score = 0
+    for title in historical_titles:
+        concept_hits = _keyword_hit_count(title, concept_keywords)
+        method_hits = _keyword_hit_count(title, method_keywords)
+        if concept_hits >= 2 and method_hits >= 1:
+            repeat_score += 3
+            if len(evidence) < 3:
+                evidence.append(title)
+        elif concept_hits >= 2:
+            repeat_score += 2
+            if len(evidence) < 3:
+                evidence.append(title)
+        elif concept_hits >= 1 and method_hits >= 1:
+            repeat_score += 1
+            if len(evidence) < 3:
+                evidence.append(title)
+    return repeat_score, evidence
+
+
+def _rank_candidates(
+    candidates: list[dict[str, object]],
+    *,
+    signal_corpus: str,
+    historical_titles: list[str],
+    module_statuses: dict[str, str],
+) -> list[dict[str, object]]:
+    ranked: list[dict[str, object]] = []
+    for item in candidates:
+        candidate = dict(item)
+        score = 0.0
+        reasons: list[str] = []
+        candidate_type = str(candidate.get("candidate_type") or "")
+        score += _candidate_type_rank(candidate_type)
+        if str(candidate.get("source") or "") == "baseline_library":
+            score += 4.0
+            reasons.append("优先消耗专栏基线题库里的未使用候选，避免重新回到纯临时拼题。")
+        else:
+            reasons.append(_infer_candidate_source_reason(candidate_type))
+
+        module_key = str(candidate.get("module") or "").strip()
+        module_status = module_statuses.get(module_key, "")
+        if module_status == "missing":
+            score += 3.0
+            reasons.append("该模块在现有题库/历史里仍偏空缺，适合先补结构。")
+        elif module_status == "partial":
+            score += 1.5
+            reasons.append("该模块已有少量覆盖，但还没形成完整结构。")
+        elif module_status == "covered":
+            score -= 2.5
+            reasons.append("该模块已有较多覆盖，继续追加要谨慎避免重复。")
+
+        hotspot_keywords = [str(item) for item in candidate.get("hotspot_keywords") or [] if str(item).strip()]
+        hotspot_hits = _keyword_hit_count(signal_corpus, hotspot_keywords)
+        if hotspot_hits > 0:
+            score += min(2.0, hotspot_hits * 0.5)
+            reasons.append("当前实时语料/反馈里能看到对应热点信号。")
+
+        repeat_score, repeat_evidence = _candidate_concept_repeat_score(candidate, historical_titles)
+        if repeat_score >= 4:
+            candidate["skip_reason"] = "historical_concept_repeat"
+            candidate["repeat_evidence"] = repeat_evidence
+            continue
+        if repeat_score > 0:
+            score -= repeat_score
+            reasons.append("历史内容里已有相近概念/方法，已做降权处理。")
+
+        candidate["selection_score"] = round(score, 2)
+        candidate["selection_reasons"] = reasons
+        candidate["source_reason"] = _infer_candidate_source_reason(candidate_type)
+        ranked.append(candidate)
+
+    ranked.sort(
+        key=lambda item: (
+            float(item.get("selection_score") or 0),
+            1 if str(item.get("priority") or "") == "主推" else 0,
+        ),
+        reverse=True,
+    )
+    return ranked
+
+
+def _generate_cluster_candidates(cluster: str, focuses: list[str], history_keys: set[str], account: str) -> list[dict[str, object]]:
     if cluster == "dify":
-        patterns = [
-            ("多轮状态怎么设计，才能避免越聊越乱？", "状态治理", "信任题", "主推"),
-            ("知识库一更新，为什么回答还是旧的？从版本治理到回写机制一次讲清", "知识更新", "信任题", "主推"),
-            ("工作流上线后总卡在中间节点？如何把排查从经验流变成固定动作", "工作流调试", "引流题", "主推"),
-            ("为什么 demo 能跑，上线后却很快失控？真正缺的不是模型，而是流程闭环", "流程闭环", "转化题", "主推"),
-            ("智能体什么时候该上，什么时候反而该退回普通工作流？", "智能体取舍", "引流题", "主推"),
-            ("评审/审批链路接进来后，怎样避免人审节点把自动化彻底卡死", "审批闭环", "转化题", "主推"),
-            ("长文档处理做了很多次，为什么结果还是不稳定？关键在这 3 层拆分", "长文档处理", "信任题", "主推"),
-            ("从一次项目到长期资产，怎样把可复用节点、提示词和规则沉淀下来", "资产化沉淀", "转化题", "备用"),
-            ("企业内部助手真正难的不是接模型，而是权限、状态和反馈回写怎么串起来", "权限与回写", "信任题", "备用"),
-            ("效果评估总靠感觉？怎样给知识库问答建立最小可执行评估闭环", "评估闭环", "转化题", "备用"),
+        blueprints = [
+            {
+                "module": "dify-multi-stage-architecture",
+                "candidate_type": "structure_gap",
+                "question": "如果把 Dify 工作流真正做成体系，除了节点编排，还必须补哪 4 个板块？",
+                "angle": "结构补完",
+                "role": "信任题",
+                "priority": "主推",
+                "concept_keywords": ["Dify", "工作流", "节点", "体系", "板块"],
+                "method_keywords": ["结构", "分层", "架构", "治理"],
+                "hotspot_keywords": ["工作流", "自动化"],
+            },
+            {
+                "module": "dify-knowledge-rag-refresh",
+                "candidate_type": "depth_detail",
+                "question": "知识库更新后回答还是旧的，问题到底更常出在切片、召回、缓存还是回写？",
+                "angle": "细节挖深",
+                "role": "信任题",
+                "priority": "主推",
+                "concept_keywords": ["知识库", "召回", "缓存", "回写", "切片"],
+                "method_keywords": ["排查", "定位", "分层"],
+                "hotspot_keywords": ["知识库", "问答", "召回"],
+            },
+            {
+                "module": "dify-state-governance",
+                "candidate_type": "depth_detail",
+                "question": "多轮状态总是越跑越乱时，最该先拆的是状态变量、节点职责，还是人工兜底边界？",
+                "angle": "细节挖深",
+                "role": "信任题",
+                "priority": "主推",
+                "concept_keywords": ["多轮", "状态", "变量", "节点", "兜底"],
+                "method_keywords": ["拆分", "边界", "治理"],
+                "hotspot_keywords": ["多轮", "智能体", "工作流"],
+            },
+            {
+                "module": "dify-workflow-debugging",
+                "candidate_type": "depth_detail",
+                "question": "工作流中间节点频繁卡死时，日志、超时、重试、人工接管该按什么顺序排？",
+                "angle": "细节挖深",
+                "role": "引流题",
+                "priority": "主推",
+                "concept_keywords": ["工作流", "节点", "日志", "超时", "重试"],
+                "method_keywords": ["排查", "顺序", "接管"],
+                "hotspot_keywords": ["工作流", "自动化", "节点"],
+            },
+            {
+                "module": "dify-hot-agent-bridge",
+                "candidate_type": "hot_bridge",
+                "question": "大家都在追智能体热点，但对普通团队来说，什么时候该先退回普通工作流？",
+                "angle": "热点引出",
+                "role": "引流题",
+                "priority": "主推",
+                "concept_keywords": ["智能体", "工作流", "普通团队", "热点"],
+                "method_keywords": ["判断", "取舍", "适用"],
+                "hotspot_keywords": ["智能体", "agent"],
+            },
+            {
+                "module": "dify-hot-long-doc-bridge",
+                "candidate_type": "hot_bridge",
+                "question": "长文档处理最近很热，但为什么一到真实项目里，最先暴露的却是稳定性和评估问题？",
+                "angle": "热点引出",
+                "role": "信任题",
+                "priority": "主推",
+                "concept_keywords": ["长文档", "稳定性", "评估", "真实项目"],
+                "method_keywords": ["落地", "拆分", "问题"],
+                "hotspot_keywords": ["长文档", "摘要", "文档"],
+            },
+            {
+                "module": "dify-approval-chain",
+                "candidate_type": "structure_gap",
+                "question": "如果要把评审/审批链路正式接进来，Dify 流程层还缺哪几层设计才不会把自动化彻底卡死？",
+                "angle": "结构补完",
+                "role": "转化题",
+                "priority": "备用",
+                "concept_keywords": ["评审", "审批", "自动化", "流程", "设计"],
+                "method_keywords": ["分层", "治理", "回退"],
+                "hotspot_keywords": ["审批", "评审"],
+            },
+            {
+                "module": "dify-assetization",
+                "candidate_type": "structure_gap",
+                "question": "从一次项目做到长期复用，提示词、节点、规则、评估资产应该怎么分层沉淀？",
+                "angle": "结构补完",
+                "role": "转化题",
+                "priority": "备用",
+                "concept_keywords": ["提示词", "节点", "规则", "评估", "资产"],
+                "method_keywords": ["沉淀", "分层", "复用"],
+                "hotspot_keywords": ["工作流", "资产"],
+            },
+            {
+                "module": "dify-enterprise-assistant",
+                "candidate_type": "depth_detail",
+                "question": "企业内部助手最容易被低估的细节，到底是权限、状态同步，还是反馈回写？",
+                "angle": "细节挖深",
+                "role": "信任题",
+                "priority": "备用",
+                "concept_keywords": ["企业助手", "权限", "状态同步", "反馈回写"],
+                "method_keywords": ["细节", "取舍", "优先级"],
+                "hotspot_keywords": ["企业助手", "内部助手"],
+            },
+            {
+                "module": "dify-evaluation-loop",
+                "candidate_type": "structure_gap",
+                "question": "知识库问答如果不补评估闭环，为什么团队最后一定会回到“靠感觉调效果”？",
+                "angle": "结构补完",
+                "role": "转化题",
+                "priority": "备用",
+                "concept_keywords": ["知识库", "问答", "评估", "效果"],
+                "method_keywords": ["闭环", "指标", "调优"],
+                "hotspot_keywords": ["知识库", "问答"],
+            },
         ]
         candidates = []
         for focus in focuses:
-            for question, angle, role, priority in patterns:
+            for blueprint in blueprints:
+                question = str(blueprint["question"])
+                role = str(blueprint["role"])
+                priority = str(blueprint["priority"])
                 title = f"[Dify实战] {focus} 场景里，{question}"
                 key = _title_key(title)
                 if key in history_keys:
                     continue
-                candidates.append({"title": title, "role": role, "priority": priority, "angle": angle})
+                candidates.append({
+                    "title": title,
+                    "role": role,
+                    "priority": priority,
+                    "angle": str(blueprint["angle"]),
+                    "module": str(blueprint["module"]),
+                    "candidate_type": str(blueprint["candidate_type"]),
+                    "concept_keywords": list(blueprint.get("concept_keywords") or []),
+                    "method_keywords": list(blueprint.get("method_keywords") or []),
+                    "hotspot_keywords": list(blueprint.get("hotspot_keywords") or []),
+                    "source": "dynamic",
+                })
                 history_keys.add(key)
         return candidates
 
@@ -562,36 +808,46 @@ def _generate_cluster_candidates(cluster: str, focuses: list[str], history_keys:
     return candidates
 
 
-def _generate_secondary_candidates(column: str, focuses: list[str], history_keys: set[str]) -> list[dict[str, str]]:
+def _generate_secondary_candidates(column: str, focuses: list[str], history_keys: set[str]) -> list[dict[str, object]]:
     if "企业级AI落地" in column or "应用系统" in column:
         patterns = [
-            ("为什么很多团队明明做出了 demo，最后还是落不到稳定使用？", "落地缺口", "转化题", "主推"),
-            ("从模型部署到业务接入，中间最容易被低估的工程层是什么？", "工程中间层", "信任题", "主推"),
-            ("如果项目已经能跑，下一步最该补的是评估、权限还是回写？", "下一步排序", "备用题", "备用"),
+            ("如果把企业 AI 落地真正做成完整链路，除模型和业务场景外，还缺哪几个中间板块？", "结构补完", "信任题", "主推", "structure_gap", ["企业", "落地", "模型", "业务", "链路"], ["结构", "板块", "分层"], ["企业助手", "工作流"]),
+            ("PoC 能跑但上线总失控时，最先该查的是权限、评估、回写，还是监控？", "细节挖深", "转化题", "主推", "depth_detail", ["PoC", "上线", "权限", "评估", "监控"], ["排查", "优先级", "上线"], ["企业助手", "工作流"]),
+            ("最近大家都在追工作流自动化热点，但企业真正落地时，为什么还是卡在工程中间层？", "热点引出", "引流题", "备用", "hot_bridge", ["工作流", "企业", "工程", "中间层"], ["落地", "桥接", "热点"], ["工作流", "自动化"]),
         ]
         prefix = "[企业AI落地]"
     elif "技术前沿每日速读" in column:
         patterns = [
-            ("为什么大家都在跟的热点，真正能落地的往往只剩下流程闭环？", "热点落地", "引流题", "主推"),
-            ("这类方向现在最值得先看什么信号，再决定要不要跟进？", "信号判断", "引流题", "主推"),
-            ("表面上都在谈智能体，真正值得普通团队先做的其实是哪一步？", "热点取舍", "信任题", "备用"),
+            ("为什么大家都在跟的热点，真正值得继续追的其实是哪些能导回深度专栏的结构线索？", "结构补完", "引流题", "主推", "structure_gap", ["热点", "深度专栏", "结构", "线索"], ["导回", "桥接", "结构"], ["热点", "趋势", "AI"]),
+            ("这类方向现在最值得先看什么信号，再决定要不要跟进？", "细节挖深", "引流题", "主推", "depth_detail", ["信号", "跟进", "判断"], ["筛选", "判断", "优先级"], ["热点", "趋势", "AI"]),
+            ("表面上都在谈智能体，真正值得普通团队先做的其实是哪一步？", "热点引出", "信任题", "备用", "hot_bridge", ["智能体", "普通团队", "热点"], ["取舍", "判断", "先做"], ["智能体", "agent"]),
         ]
         prefix = "[AI]"
     else:
         patterns = [
-            ("为什么这个方向适合承担今天的第二篇，而不是继续压主专栏？", "第二位补位", "引流题", "主推"),
-            ("要激活这个专栏，第一批内容最该补方法题、案例题还是判断题？", "激活策略", "信任题", "备用"),
+            ("为什么这个方向适合承担今天的第二篇，而不是继续压主专栏？", "结构补完", "引流题", "主推", "structure_gap", [column, "第二篇", "主专栏"], ["补位", "结构"], []),
+            ("要激活这个专栏，第一批内容最该补方法题、案例题还是判断题？", "细节挖深", "信任题", "备用", "depth_detail", [column, "方法", "案例", "判断"], ["激活", "取舍"], []),
         ]
         prefix = f"[{column}]"
 
     candidates = []
     for focus in focuses:
-        for question, angle, role, priority in patterns:
+        for question, angle, role, priority, candidate_type, concept_keywords, method_keywords, hotspot_keywords in patterns:
             title = f"{prefix} {focus} 里，{question}"
             key = _title_key(title)
             if key in history_keys:
                 continue
-            candidates.append({"title": title, "role": role.replace("备用题", "引流题"), "priority": priority, "angle": angle, "source": "dynamic"})
+            candidates.append({
+                "title": title,
+                "role": role.replace("备用题", "引流题"),
+                "priority": priority,
+                "angle": angle,
+                "source": "dynamic",
+                "candidate_type": candidate_type,
+                "concept_keywords": list(concept_keywords),
+                "method_keywords": list(method_keywords),
+                "hotspot_keywords": list(hotspot_keywords),
+            })
             history_keys.add(key)
     return candidates
 
@@ -690,6 +946,21 @@ def plan_topic_batch_from_live(*, date: str, account: str, snapshot_path: Path, 
         primary_candidates = primary_library_candidates + primary_candidates
     if secondary_library_candidates:
         secondary_candidates = secondary_library_candidates + secondary_candidates
+
+    primary_module_statuses = _load_library_module_statuses(base_dir=base_dir, account=account, column=primary_column)
+    secondary_module_statuses = _load_library_module_statuses(base_dir=base_dir, account=account, column=secondary_column) if secondary_column else {}
+    primary_candidates = _rank_candidates(
+        primary_candidates,
+        signal_corpus=signal_corpus,
+        historical_titles=historical_titles,
+        module_statuses=primary_module_statuses,
+    )
+    secondary_candidates = _rank_candidates(
+        secondary_candidates,
+        signal_corpus=signal_corpus,
+        historical_titles=historical_titles,
+        module_statuses=secondary_module_statuses,
+    )
     recent_title_set = {_title_key(title) for title in recent_titles}
 
     topics: list[dict[str, object]] = []
@@ -715,14 +986,17 @@ def plan_topic_batch_from_live(*, date: str, account: str, snapshot_path: Path, 
                 "reason": (
                     f"优先从专栏基线题库中选题，结合实时标题、历史已发文章、反馈/策略信号校验后输出。{split_reason}"
                     if candidate.get("source") == "baseline_library"
-                    else f"基于实时标题、历史已发文章、反馈/策略信号重新生成，不再直接复用旧题库。{split_reason}"
+                    else f"基于实时标题、历史已发文章、反馈/策略信号重新生成，不再直接复用旧题库。{candidate.get('source_reason') or _infer_candidate_source_reason(str(candidate.get('candidate_type') or ''))}{split_reason}"
                 ),
-                "expected_value": f"围绕 {candidate['angle']} 补当前内容缺口，同时避免和已发标题直接重复。",
+                "expected_value": f"围绕 {candidate['angle']} 补当前内容缺口，同时避免和已发标题直接重复，并尽量避开已反复讨论的概念/方法。",
                 "why_now": f"当前主线聚类为 {cluster}，并结合市场/反馈语料提取出这些高频焦点：{'、'.join(focuses[:3])}。",
                 "cta": "如果你认可这个方向，我可以继续把它扩成当天发文包和正文初稿。",
                 "role": "转化题" if candidate["role"] == "转化题" else ("信任题" if candidate["role"] == "信任题" else "引流题"),
                 "risk": "若账号实时页面样本仍偏少，建议补抓一次完整专栏历史页再提高置信度。",
                 "priority": candidate["priority"],
+                "topic_logic_type": candidate.get("candidate_type"),
+                "selection_score": candidate.get("selection_score"),
+                "selection_reasons": candidate.get("selection_reasons") or [],
             }
         )
 
@@ -763,6 +1037,8 @@ def plan_topic_batch_from_live(*, date: str, account: str, snapshot_path: Path, 
             "This batch was generated from live facts plus historical article dedupe, not from the old static topic pool.",
             "Historical titles from full-account capture and topic-usage ledger were treated as hard anti-duplication references.",
             "For 技术小甜甜 daily planning, the first two publish slots still prefer different columns when a viable secondary column is visible in live facts.",
+            "Topic selection now explicitly balances three positive sources: structure-gap completion, detail/scenario deepening, and hot-topic bridge angles.",
+            "Negative filters now try to avoid both title-level duplication and repeated concept/method coverage from historical content.",
         ],
         "source_signals": [
             f"live snapshot: {snapshot_path}",

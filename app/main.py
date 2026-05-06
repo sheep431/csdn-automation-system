@@ -31,6 +31,7 @@ from app.intel import (
     log_competitor_record,
     log_feedback_record,
     log_sales_record,
+    prepare_coupon_use_from_management_page,
     refresh_publish_facts_from_account,
     review_intel,
     save_live_account_snapshot,
@@ -335,6 +336,31 @@ def refresh_csdn_publish_facts_cmd(
 ) -> None:
     result = asyncio.run(refresh_publish_facts_from_account(date=date, account=account, profile=profile, base_dir=base_dir))
     print(f"[green]Publish facts refreshed from live account[/green] {result['report_path']}")
+    print(json.dumps({key: [str(item) for item in value] if isinstance(value, list) else (str(value) if isinstance(value, Path) else value) for key, value in result.items()}, ensure_ascii=False, indent=2))
+
+
+@app.command("prepare-csdn-coupon-use")
+def prepare_csdn_coupon_use_cmd(
+    date: str = typer.Option(..., "--date", help="操作日期，格式 YYYY-MM-DD"),
+    account: str = typer.Option(..., "--account", help="账号名，如 技术小甜甜 / 踏雪无痕老爷子"),
+    profile: str = typer.Option(..., "--profile", help="浏览器 profile，如 new-main / old-traffic"),
+    published_title: str = typer.Option(..., "--published-title", help="刚发布或准备挂券的文章标题，用于建议下一篇与报告记录"),
+    auto_click_use: bool = typer.Option(False, "--auto-click-use/--no-auto-click-use", help="是否尝试自动点击流量券管理页中的第一个“去使用”按钮"),
+    wait_seconds: int = typer.Option(12, "--wait-seconds", min=1, help="打开文章列表页后，给人工切到流量券管理页的等待秒数"),
+    base_dir: Path | None = typer.Option(None, "--base-dir", file_okay=False, help="Root directory for business/intel data"),
+) -> None:
+    result = asyncio.run(
+        prepare_coupon_use_from_management_page(
+            date=date,
+            account=account,
+            profile=profile,
+            published_title=published_title,
+            base_dir=base_dir,
+            auto_click_use=auto_click_use,
+            wait_seconds=wait_seconds,
+        )
+    )
+    print(f"[green]Coupon use plan ready[/green] {result['report_path']}")
     print(json.dumps({key: [str(item) for item in value] if isinstance(value, list) else (str(value) if isinstance(value, Path) else value) for key, value in result.items()}, ensure_ascii=False, indent=2))
 
 

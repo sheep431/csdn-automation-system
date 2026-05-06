@@ -29,6 +29,7 @@
 - `import-csdn-live-snapshot`
 - `sync-published-from-live`
 - `refresh-csdn-publish-facts`
+- `prepare-csdn-coupon-use`
 - `plan-topic-batch-from-live`
 
 推荐使用方式：
@@ -44,7 +45,29 @@ python -m app.main refresh-csdn-publish-facts \
   --date 2026-04-21 \
   --account 技术小甜甜 \
   --profile new-main
+
+# 如果流量券管理页里已有可用券，可做挂券执行与结果确认：
+python -m app.main prepare-csdn-coupon-use \
+  --date 2026-04-21 \
+  --account 技术小甜甜 \
+  --profile new-main \
+  --published-title "刚发布的文章标题" \
+  --auto-click-use
 ```
+
+这个命令当前会自动：
+- 进入流量券管理页
+- 先按**第一张流量券**判断当前是否还能挂
+- 第一张券显示 `去使用`：视为当前可挂
+- 第一张券显示 `已完成`：视为当前暂无可挂券
+- 只有在第一张券可挂时，才继续尝试点击 `去使用`
+- 识别“可推广文章”弹层
+- 自动选中文章并点 `确定`
+- 识别 `推广成功/使用成功/投放成功` 等信号
+- 或记录 `我的推广` 里的当前推广文章与状态
+- 额外输出仅保留“推广中/投放中”的活跃推广摘要
+- 自动判断当前流量券是否已被占用（`coupon_occupied`）
+- 生成一句可直接看的运营判断（`operational_judgment`）
 
 会产出：
 - `data/intel/accounts/YYYY-MM-DD_<account>_live.json`

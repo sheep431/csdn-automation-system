@@ -254,7 +254,8 @@ python -m app.main check-publish --draft-exists --review-status approved --draft
 7. 发布后先让人完成最终发布动作
 8. 如果只是单次同步，跑 `sync-published-from-live`
 9. 如果登录态还有效并且想直接从账号页面刷新，跑 `refresh-csdn-publish-facts`
-10. 最后再 `record-state` 或 `state-snapshot`
+10. 如果流量券管理页已有可用券，跑 `prepare-csdn-coupon-use` 做挂券执行、结果确认、“券是否仍被占用”的判断，以及一句话运营结论；是否还能挂，优先看第一张流量券是 `去使用` 还是 `已完成`
+11. 最后再 `record-state` 或 `state-snapshot`
 
 建议节奏：
 

@@ -4,9 +4,10 @@ import asyncio
 
 from playwright.async_api import Page
 
-from app.config import ALLOW_PUBLISH, BASE_DIR, RETRY_BACKOFF_SECONDS
-from app.browser.session_manager import BrowserSessionManager
 from app.business.ops import mark_topic_published_from_execution
+from app.config import ALLOW_PUBLISH, BASE_DIR, CSDN_ARTICLE_LIST_URL, RETRY_BACKOFF_SECONDS
+from app.browser.session_manager import BrowserSessionManager
+from app.intel.live_accounts import analyze_post_publish_coupon_and_pick_next
 from app.logging.artifact_manager import ArtifactManager
 from app.logging.event_logger import EventLogger
 from app.publishers.csdn_publisher import (
@@ -304,6 +305,22 @@ class ExecutionRunner:
             final_stage=ExecutionStage.DONE,
             article_url=article_url,
         )
+        page_texts: list[str] = []
+        try:
+            body_text = await page.locator("body").inner_text()
+            if body_text:
+                page_texts.append(body_text)
+        except Exception:
+            pass
+        try:
+            await page.goto(CSDN_ARTICLE_LIST_URL, wait_until="domcontentloaded")
+            await page.wait_for_timeout(2500)
+            body_text = await page.locator("body").inner_text()
+            if body_text:
+                page_texts.append(body_text)
+        except Exception:
+            pass
+        self._run_post_publish_coupon_followup(task, result, page_texts=page_texts)
         self._persist_success(task, result)
         return result
 
@@ -453,6 +470,49 @@ class ExecutionRunner:
             },
         )
         return result
+
+    def _run_post_publish_coupon_followup(self, task: ArticleTask, result: ExecutionResult, *, page_texts: list[str]) -> dict | None:
+        if task.publish_mode != PublishMode.PUBLISH or not result.article_url:
+            return None
+        account_profile = str(task.metadata.get("account_profile") or self.profile_name or "").strip()
+        account = str(task.metadata.get("account") or task.metadata.get("account_name") or "").strip()
+        if not account:
+            account = {
+                "new-main": "技术小甜甜",
+                "old-traffic": "踏雪无痕老爷子",
+            }.get(account_profile, "技术小甜甜")
+        if not page_texts:
+            return None
+        try:
+            followup = analyze_post_publish_coupon_and_pick_next(
+                date=(result.ended_at or result.started_at or "")[:10],
+                account=account,
+                page_texts=page_texts,
+                base_dir=self.base_dir,
+                published_title=task.title,
+            )
+            self.logger.info(
+                task_id=task.task_id,
+                article_id=task.article_id,
+                stage=ExecutionStage.DONE.value,
+                action="post_publish_coupon_followup",
+                message="post publish coupon followup completed",
+                extra={
+                    "has_coupon": followup.get("coupon", {}).get("has_coupon"),
+                    "recommendation": (followup.get("recommendation") or {}).get("title"),
+                    "report_path": str(followup.get("report_path")) if followup.get("report_path") else None,
+                },
+            )
+            return followup
+        except Exception as exc:
+            self.logger.warning(
+                task_id=task.task_id,
+                article_id=task.article_id,
+                stage=ExecutionStage.DONE.value,
+                action="post_publish_coupon_followup_failed",
+                message=str(exc),
+            )
+            return None
 
     def _persist_success(self, task: ArticleTask, result: ExecutionResult) -> None:
         self.store.update_task_status(task.task_id, TaskStatus.SUCCESS)
